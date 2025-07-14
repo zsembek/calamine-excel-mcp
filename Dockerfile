@@ -1,43 +1,38 @@
-# Используем официальный образ Python 3.11 slim
-FROM python:3.11-slim
+# Используем официальный образ Python 3.11
+FROM python:3.11-slim as builder
 
-# Устанавливаем рабочую директорию внутри контейнера
+# Устанавливаем переменные окружения для Poetry
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Устанавливаем Poetry
+RUN pip install poetry
+
+# Устанавливаем рабочую директорию
 WORKDIR /opt/calamine-mcp-server
 
-# Устанавливаем переменные окружения, чтобы избежать вывода логов в буфер
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONDONTWRITEBYTECODE 1
+# Копируем файлы зависимостей и устанавливаем их
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-dev --no-root && rm -rf $POETRY_CACHE_DIR
 
-# Устанавливаем системные зависимости
-# build-essential нужен для компиляции некоторых зависимостей python-calamine
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential \
-    && rm -rf /var/lib/apt/lists/*
+#-----------------------------------------------------
 
-# Копируем файлы с зависимостями и структурой проекта
-COPY requirements.txt pyproject.toml ./
+# Создаем финальный, легковесный образ
+FROM python:3.11-slim
 
-# Устанавливаем зависимости. Этот шаг будет кэшироваться Docker'ом,
-# если requirements.txt не изменится, что ускорит последующие сборки.
-RUN pip install --no-cache-dir -r requirements.txt
+# Устанавливаем рабочую директорию
+WORKDIR /opt/calamine-mcp-server
 
-# Копируем исходный код нашего приложения
+# Копируем виртуальное окружение с зависимостями из сборщика
+COPY --from=builder /opt/calamine-mcp-server/.venv ./.venv
+
+# Активируем виртуальное окружение для всех последующих команд
+ENV PATH="/opt/calamine-mcp-server/.venv/bin:$PATH"
+
+# Копируем исходный код приложения
 COPY ./calamine_mcp ./calamine_mcp
 
-# Устанавливаем наше приложение в режиме редактирования.
-# Это зарегистрирует команду `excel-mcp-server`, определенную в pyproject.toml
-RUN pip install -e .
-
-# Задаем переменные окружения для сервера из вашего docker-compose
-# Значения по умолчанию, которые могут быть переопределены в docker-compose.yml
-ENV EXCEL_FILES_PATH=/app/backend/data/uploads
-ENV FASTMCP_HOST=0.0.0.0
-ENV FASTMCP_PORT=8000
-
-# Создаем директорию для загрузок, чтобы избежать проблем с правами
-# Пользователь будет задан в docker-compose.yml
-RUN mkdir -p ${EXCEL_FILES_PATH} && chown -R 1000:1000 ${EXCEL_FILES_PATH}
-
-# Команда для запуска сервера. `excel-mcp-server` - это точка входа,
-# определенная в pyproject.toml, `sse` - это команда в cli.py
-CMD ["excel-mcp-server", "sse"]
+# Запускаем приложение
+CMD ["excel-mcp-server"]
