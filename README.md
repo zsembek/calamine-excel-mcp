@@ -20,6 +20,9 @@ Workbooks are cached to speed up repeated reads.
 
 Easy Deployment:
 Containerized with Docker and Docker Compose.
+The code now automatically supports both old and new versions of
+``fastmcp``. If you encounter import errors related to ``Mcp`` or ``Mq``,
+make sure the library is up to date.
 
 🗂 Project Structure
 bash

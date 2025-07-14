@@ -9,7 +9,14 @@ import logging
 import os
 from typing import Any, Dict, List
 
-from fastmcp import Mcp, Mq
+# fastmcp recently changed its public API, moving the main classes
+# under the ``server`` submodule.  To remain compatible with both the
+# old and the new versions we attempt the old style import first and
+# fall back to the new location if needed.
+try:  # pragma: no cover - import paths depend on installed version
+    from fastmcp import Mcp, Mq
+except ImportError:  # pragma: no cover - for new fastmcp versions
+    from fastmcp.server import Mcp, Mq
 
 from .workbook import Workbook
 
