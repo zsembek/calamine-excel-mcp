@@ -7,51 +7,17 @@
 """
 import logging
 import os
-# fastmcp has changed its public API multiple times.  To stay compatible
-# we try several known locations and finally fall back to scanning the
-# package for the required classes at runtime.
+
 from typing import Any, Dict, List
-from importlib import import_module
-import pkgutil
 
-
-def _import_fastmcp():  # pragma: no cover - depends on installed fastmcp
-    """Return the ``Mcp`` and ``Mq`` classes from whatever fastmcp version is
-    installed."""
-
-    candidates = [
-        "fastmcp",
-        "fastmcp.server",
-        "fastmcp.server.api",
-        "fastmcp.api",
-    ]
-
-    for mod_name in candidates:
-        try:
-            mod = import_module(mod_name)
-        except Exception:  # pragma: no cover - optional modules may miss
-            continue
-        if hasattr(mod, "Mcp") and hasattr(mod, "Mq"):
-            return mod.Mcp, mod.Mq
-
-    try:
-        import fastmcp
-        for pkg in pkgutil.walk_packages(fastmcp.__path__, fastmcp.__name__ + "."):
-            try:
-                mod = import_module(pkg.name)
-            except Exception:  # pragma: no cover - ignore broken imports
-                continue
-            if hasattr(mod, "Mcp") and hasattr(mod, "Mq"):
-                return mod.Mcp, mod.Mq
-    except Exception:
-        pass
-
-    raise ImportError(
-        "Unable to locate 'Mcp' and 'Mq' in fastmcp. Please verify the library version."
-    )
-
-
-Mcp, Mq = _import_fastmcp()
+# fastmcp recently changed its public API, moving the main classes
+# under the ``server`` submodule.  To remain compatible with both the
+# old and the new versions we attempt the old style import first and
+# fall back to the new location if needed.
+try:  # pragma: no cover - import paths depend on installed version
+    from fastmcp import Mcp, Mq
+except ImportError:  # pragma: no cover - for new fastmcp versions
+    from fastmcp.server import Mcp, Mq
 
 from .workbook import Workbook
 
