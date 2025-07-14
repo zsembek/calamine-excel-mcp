@@ -1,8 +1,11 @@
 # Этот файл полностью соответствует вашему запросу.
+version: "3.8"
 services:
   ssp-excel-mcp:
     # Указываем, что нужно собирать образ из текущей директории
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
@@ -13,8 +16,8 @@ services:
       - EXCEL_FILES_PATH=/app/backend/data/uploads
       # UID и GID для запуска процесса от имени вашего пользователя,
       # чтобы избежать проблем с правами на смонтированный volume
-      - UID=1000
-      - GID=1000
+      - UID=${UID:-1000}
+      - GID=${GID:-1000}
     # Запускаем контейнер от имени пользователя, указанного в environment
-    user: "${UID}:${GID}"
+    user: "${UID:-1000}:${GID:-1000}"
     restart: always

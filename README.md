@@ -48,7 +48,9 @@ sh
 mkdir -p /opt/excel-mcp/calamine_mcp
 cd /opt/excel-mcp
 2. Add Project Files
-Copy the project files (as shown in the structure above) into their respective directories.
+Copy **all** files from this repository into `/opt/excel-mcp`.
+The `Dockerfile` must be located next to `docker-compose.yml` so that the
+image can be built correctly.
 
 3. Prepare Excel Files Directory
 Ensure the directory to be mounted as a volume exists. For example:
