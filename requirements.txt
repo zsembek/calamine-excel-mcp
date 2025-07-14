@@ -1,0 +1,4 @@
+# Файл зависимостей. Docker будет использовать его для кэширования слоев.
+fastmcp
+python-calamine[full]
+typer[all]

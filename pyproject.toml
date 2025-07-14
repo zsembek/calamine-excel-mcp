@@ -1,0 +1,22 @@
+# Файл для определения структуры Python-пакета.
+# Это современная замена setup.py.
+[project]
+name = "calamine-mcp"
+version = "0.1.0"
+description = "MCP Server for reading Excel files using python-calamine"
+authors = [{ name = "Gemini", email = "gemini@google.com" }]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastmcp",
+    "python-calamine[full]", # [full] для поддержки всех форматов
+    "typer[all]", # Для создания удобного CLI
+]
+
+[project.scripts]
+# Определяем команду для запуска сервера, как вы и просили в вашем Dockerfile.
+excel-mcp-server = "calamine_mcp.cli:app"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
