@@ -48,7 +48,7 @@ def _import_fastmcp():  # pragma: no cover - depends on installed fastmcp
         pass
 
     raise ImportError(
-        "Unable to locate 'Mcp' and 'Mq' in fastmcp. Please verify the library version." 
+        "Unable to locate 'Mcp' and 'Mq' in fastmcp. Please verify the library version."
     )
 
 
